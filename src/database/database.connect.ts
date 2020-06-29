@@ -4,7 +4,7 @@ export default class database {
 	private url: string;
 	private options: any = {
 		useNewUrlParser: true,
-		useUnifiedTopology: true,
+		useUnifiedTopology: true
 	};
 
 	private constructor(URL: string) {
