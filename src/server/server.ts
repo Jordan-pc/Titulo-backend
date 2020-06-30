@@ -1,6 +1,8 @@
 import express from "express";
+import userRouter from "../user/user.routes";
+import authRouter from "../auth/auth.routes";
 
-export default class server {
+export default class Server {
 	private app: express.Application;
 	private port: number;
 
@@ -10,11 +12,12 @@ export default class server {
 	}
 
 	static init(port: number) {
-		return new server(port);
+		return new Server(port);
 	}
 
 	start() {
 		this.configuration();
+		this.routes();
 		this.app.listen(this.port, () => {
 			console.log("Server on port: ", this.port);
 		});
@@ -23,5 +26,10 @@ export default class server {
 	private configuration() {
 		this.app.use(express.urlencoded({ extended: false }));
 		this.app.use(express.json());
+	}
+
+	private routes() {
+		this.app.use(userRouter);
+		this.app.use(authRouter);
 	}
 }

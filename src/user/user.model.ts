@@ -1,11 +1,14 @@
 import mongoose, { Schema, Document } from "mongoose";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
-	name: String;
-	email: String;
-	password: String;
-	role: String;
+	name: string;
+	email: string;
+	password: string;
+	role: string;
 	enabled: Boolean;
+	encryptPassword(password: string): Promise<string>;
+	validatePassword(password: string): Promise<boolean>;
 }
 
 let userSchema = new Schema(
@@ -41,10 +44,24 @@ let userSchema = new Schema(
 	}
 );
 
-userSchema.methods.toJson = function () {
-	let userObject = this.toObject();
-	delete userObject.password;
-	return userObject;
+userSchema.methods.encryptPassword = async (
+	password: string
+): Promise<string> => {
+	const salt = await bcrypt.genSalt(5);
+	return bcrypt.hash(password, salt);
 };
+
+userSchema.methods.validatePassword = async function (
+	password: string
+): Promise<boolean> {
+	return await bcrypt.compare(password, this.password);
+};
+
+userSchema.set("toJSON", {
+	transform: function (doc, ret) {
+		delete ret.password;
+		return ret;
+	}
+});
 
 export default mongoose.model<IUser>("User", userSchema);

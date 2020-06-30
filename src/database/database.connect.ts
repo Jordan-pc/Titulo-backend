@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
-export default class database {
+export default class Database {
 	private url: string;
 	private options: any = {
 		useNewUrlParser: true,
-		useUnifiedTopology: true
+		useUnifiedTopology: true,
+		useCreateIndex: true
 	};
 
 	private constructor(URL: string) {
@@ -12,7 +13,7 @@ export default class database {
 	}
 
 	static init(URL: string) {
-		return new database(URL);
+		return new Database(URL);
 	}
 
 	async conect() {
