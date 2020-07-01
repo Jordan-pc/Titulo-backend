@@ -1,6 +1,6 @@
-import express from "express";
-import userRouter from "../user/user.routes";
-import authRouter from "../auth/auth.routes";
+import express from 'express';
+import userRouter from '../user/user.routes';
+import authRouter from '../auth/auth.routes';
 
 export default class Server {
 	private app: express.Application;
@@ -19,7 +19,7 @@ export default class Server {
 		this.configuration();
 		this.routes();
 		this.app.listen(this.port, () => {
-			console.log("Server on port: ", this.port);
+			console.log('Server on port: ', this.port);
 		});
 	}
 

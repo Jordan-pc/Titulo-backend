@@ -1,11 +1,12 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export default class Database {
 	private url: string;
 	private options: any = {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
-		useCreateIndex: true
+		useCreateIndex: true,
+		useFindAndModify: false
 	};
 
 	private constructor(URL: string) {
@@ -20,7 +21,7 @@ export default class Database {
 		mongoose
 			.connect(this.url, this.options)
 			.then(() => {
-				console.log("connected to database");
+				console.log('connected to database');
 			})
 			.catch((err) => console.log(err));
 	}

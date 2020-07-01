@@ -1,20 +1,25 @@
-import { Router } from "express";
-import UserController from "./user.controller";
-import AuthMiddleware from "../auth/auth.middleware";
+import { Router } from 'express';
+import UserController from './user.controller';
+import AuthMiddleware from '../auth/auth.middleware';
 
 const userController = new UserController();
 const userRouter: Router = Router();
 
-userRouter.post("/signup", userController.saveUser);
+userRouter.post('/signup', userController.saveUser);
 userRouter.get(
-	"/profile",
+	'/profile',
 	AuthMiddleware.tokenValidation,
 	userController.profile
 );
-/*userRouter.put(
-	"/profile/change",
+userRouter.put(
+	'/profile/change',
 	AuthMiddleware.tokenValidation,
 	userController.modifyUser
-);*/
+);
+userRouter.delete(
+	'/profile/delete',
+	AuthMiddleware.tokenValidation,
+	userController.deleteUser
+);
 
 export default userRouter;
