@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IPost extends Document {
+export interface IComment extends Document {
 	title: string;
 	url: string;
 	content: string;
@@ -9,19 +9,11 @@ export interface IPost extends Document {
 	enabled: boolean;
 }
 
-let PostSchema = new Schema(
+let CommentSchema = new Schema(
 	{
-		title: {
-			type: String,
-			required: [true, 'El titulo es necesario.']
-		},
-		url: {
-			type: String,
-			required: [true, 'Es necesario la URL del material.']
-		},
 		content: {
 			type: String,
-			required: [true, 'Se requiere una descripción del material.']
+			required: [true, 'Comentario en blanco.']
 		},
 		createdAt: {
 			type: Date,
@@ -40,4 +32,4 @@ let PostSchema = new Schema(
 	}
 );
 
-export default mongoose.model<IPost>('Post', PostSchema);
+export default mongoose.model<IComment>('Comment', CommentSchema);
