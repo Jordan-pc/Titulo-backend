@@ -7,6 +7,7 @@ export interface IComment extends Document {
 	createdAt: Date;
 	updatedAt: number;
 	enabled: boolean;
+	commentedBy: string;
 }
 
 let CommentSchema = new Schema(
@@ -25,6 +26,11 @@ let CommentSchema = new Schema(
 		enabled: {
 			type: Boolean,
 			default: true
+		},
+		commentedBy: {
+			type: Schema.Types.ObjectId,
+			ref: 'user',
+			required: [true, 'Usuario necesario.']
 		}
 	},
 	{

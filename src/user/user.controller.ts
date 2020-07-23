@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import User, { IUser } from './user.model';
+import Post from '../post/post.model';
 
 export default class UserController {
 	async saveUser(req: Request, res: Response) {
@@ -16,7 +17,11 @@ export default class UserController {
 	}
 	async profile(req: Request, res: Response) {
 		try {
-			const user = await User.findById(req.userId);
+			const user = await User.findById(req.userId).populate({
+				path: 'posts',
+				model: Post,
+				select: 'title'
+			});
 			if (!user) return res.status(204).send('Usuario no encontrado.');
 			res.status(200).send(user);
 		} catch (error) {
@@ -32,6 +37,7 @@ export default class UserController {
 			user.name = name;
 			user.email = email;
 			user.password = await user.encryptPassword(password);
+			user.updatedAt = Date.now();
 			await user.save();
 			res.status(200).send('Cambios realizados');
 		} catch (error) {

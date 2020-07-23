@@ -7,6 +7,9 @@ export interface IUser extends Document {
 	password: string;
 	role: string;
 	enabled: boolean;
+	createdAt: Date;
+	updatedAt: number;
+	posts: [string];
 	encryptPassword(password: string): Promise<string>;
 	validatePassword(password: string): Promise<boolean>;
 }
@@ -45,7 +48,20 @@ let userSchema = new Schema(
 		enabled: {
 			type: Boolean,
 			default: true
-		}
+		},
+		createdAt: {
+			type: Date,
+			default: Date.now
+		},
+		updatedAt: {
+			type: Date
+		},
+		posts: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'post'
+			}
+		]
 	},
 	{
 		versionKey: false

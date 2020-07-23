@@ -1,12 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPost extends Document {
+	id: number;
 	title: string;
 	url: string;
 	content: string;
 	createdAt: Date;
 	updatedAt: number;
 	enabled: boolean;
+	publishedBy: string;
+	comments: [string];
 }
 
 let PostSchema = new Schema(
@@ -33,7 +36,18 @@ let PostSchema = new Schema(
 		enabled: {
 			type: Boolean,
 			default: true
-		}
+		},
+		publishedBy: {
+			type: Schema.Types.ObjectId,
+			ref: 'User',
+			required: [true, 'Usuario necesario.']
+		},
+		comments: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'comment'
+			}
+		]
 	},
 	{
 		versionKey: false
