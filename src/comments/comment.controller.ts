@@ -48,10 +48,19 @@ export default class CommentController {
 	}
 	async deleteComment(req: Request, res: Response) {
 		try {
-			let comment = await Comment.findByIdAndDelete(req.params.id);
+			let comment = await Comment.findById(req.params.id);
 			if (!comment)
 				return res.status(204).send('Comentario no encontrado.');
-			res.status(200).send('Comentario eliminado.');
+			if ((req.userId = comment.commentedBy)) {
+				comment.enabled = false;
+				await comment.save();
+				//comment.deleteOne(); en caso de querer borrar de verdad
+				res.status(200).send('comentario eliminado.');
+			} else {
+				res.status(204).send(
+					'No posees permiso para eliminar este comentario'
+				);
+			}
 		} catch (error) {
 			console.log(error);
 			return res.status(400).send(error);

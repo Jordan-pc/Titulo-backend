@@ -47,8 +47,11 @@ export default class UserController {
 	}
 	async deleteUser(req: Request, res: Response) {
 		try {
-			let user = await User.findByIdAndDelete(req.userId);
+			let user = await User.findById(req.userId);
 			if (!user) return res.status(204).send('Usuario no encontrado.');
+			user.enabled = false;
+			await user.save();
+			//user.deleteOne(); en caso de querer borrar de verdad
 			res.status(200).send('Usuario Eliminado');
 		} catch (error) {
 			console.log(error);

@@ -5,7 +5,7 @@ import AuthMiddleware from '../auth/auth.middleware';
 const userController = new UserController();
 const userRouter: Router = Router();
 
-userRouter.post('/signup', userController.saveUser);
+userRouter.post('/signin', userController.saveUser);
 userRouter.get(
 	'/profile',
 	AuthMiddleware.tokenValidation,

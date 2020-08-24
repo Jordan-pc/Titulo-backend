@@ -8,6 +8,8 @@ export interface IPost extends Document {
 	createdAt: Date;
 	updatedAt: number;
 	enabled: boolean;
+	categorys: [string];
+	tags: [string];
 	publishedBy: string;
 	comments: [string];
 }
@@ -16,10 +18,12 @@ let PostSchema = new Schema(
 	{
 		title: {
 			type: String,
+			unique: true,
 			required: [true, 'El titulo es necesario.']
 		},
 		url: {
 			type: String,
+			unique: true,
 			required: [true, 'Es necesario la URL del material.']
 		},
 		content: {
@@ -37,6 +41,16 @@ let PostSchema = new Schema(
 			type: Boolean,
 			default: true
 		},
+		categorys: [
+			{
+				type: String
+			}
+		],
+		tags: [
+			{
+				type: String
+			}
+		],
 		publishedBy: {
 			type: Schema.Types.ObjectId,
 			ref: 'User',

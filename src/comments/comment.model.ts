@@ -1,8 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IComment extends Document {
-	title: string;
-	url: string;
 	content: string;
 	createdAt: Date;
 	updatedAt: number;
