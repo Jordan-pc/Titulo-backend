@@ -13,7 +13,8 @@ export default class AuthController {
 				return res.status(400).send('Contraseña incorrecta.');
 			const token: string = jwt.sign(
 				{
-					_id: user._id
+					_id: user._id,
+					role: user.role
 				},
 				'token-dev',
 				{

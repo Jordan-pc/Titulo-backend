@@ -21,7 +21,7 @@ postRouter.put(
 postRouter.delete(
 	'/publications/:id',
 	AuthMiddleware.tokenValidation,
-	postController.deletePost
+	postController.changePostEnabled
 );
 
 export default postRouter;

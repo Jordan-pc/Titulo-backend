@@ -19,7 +19,7 @@ commentRouter.put(
 commentRouter.delete(
 	'/commentdelete/:id',
 	AuthMiddleware.tokenValidation,
-	commentController.deleteComment
+	commentController.changeCommentEnabled
 );
 
 export default commentRouter;

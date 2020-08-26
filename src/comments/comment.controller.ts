@@ -37,22 +37,28 @@ export default class CommentController {
 			let comment = await Comment.findById(req.params.id);
 			if (!comment)
 				return res.status(204).send('Comentario no encontrado.');
-			comment.content = content;
-			comment.updatedAt = Date.now();
-			await comment.save();
-			res.status(200).send('Cambios realizados.');
+			if (req.userId == comment.commentedBy) {
+				comment.content = content;
+				comment.updatedAt = Date.now();
+				await comment.save();
+				res.status(200).send('Cambios realizados.');
+			} else {
+				return res
+					.status(204)
+					.send('No posees permiso para modificar este comentario.');
+			}
 		} catch (error) {
 			console.log(error);
 			return res.status(400).send(error);
 		}
 	}
-	async deleteComment(req: Request, res: Response) {
+	async changeCommentEnabled(req: Request, res: Response) {
 		try {
 			let comment = await Comment.findById(req.params.id);
 			if (!comment)
 				return res.status(204).send('Comentario no encontrado.');
-			if ((req.userId = comment.commentedBy)) {
-				comment.enabled = false;
+			if (req.userId == comment.commentedBy || req.userRole === 'ADMIN') {
+				comment.enabled = !comment.enabled;
 				await comment.save();
 				//comment.deleteOne(); en caso de querer borrar de verdad
 				res.status(200).send('comentario eliminado.');
