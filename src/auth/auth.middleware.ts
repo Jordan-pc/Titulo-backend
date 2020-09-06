@@ -11,11 +11,11 @@ interface IPayload {
 export default class AuthMiddleware {
 	static tokenValidation(req: Request, res: Response, next: NextFunction) {
 		try {
-			const token = req.header('auth-token');
+			const token = req.header('Authorization');
 			if (!token)
 				return res
 					.status(401)
-					.send('Seccion expirada o acceso denegado');
+					.send({ message: 'Seccion expirada o acceso denegado' });
 			const Payload = jwt.verify(token, 'token-dev') as IPayload;
 			req.userId = Payload._id;
 			req.userRole = Payload.role;

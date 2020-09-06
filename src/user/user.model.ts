@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Error } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
@@ -23,18 +23,27 @@ let userSchema = new Schema(
 		email: {
 			type: String,
 			unique: true,
-			required: [true, 'El correo es necesario.']
+			lowercase: true,
+			required: [true, 'El correo es necesario.'],
+			validate: {
+				validator: function (value: string) {
+					return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
+						value
+					);
+				},
+				message: 'Please enter a valid email'
+			}
 		},
 		password: {
 			type: String,
 			required: [true, 'La contraseña es necesaria.'],
-			minlength: [2, 'La contaseña debe contener al menos 2 caracteres'],
+			minlength: [5, 'La contaseña debe contener al menos 5 caracteres'],
 			validate: {
 				validator: function (value: any) {
-					return value.length >= 2 || value.length === 0;
+					return value.length >= 5 || value.length === 0;
 				},
 				message: () =>
-					'La contraseña debe contener al menos 2 caracteres'
+					'La contraseña debe contener al menos 5 caracteres'
 			}
 		},
 		role: {
@@ -71,7 +80,7 @@ let userSchema = new Schema(
 userSchema.methods.encryptPassword = async (
 	password: string
 ): Promise<string> => {
-	if (password.length < 2) return '.'; //parche
+	if (password.length < 5) return '.'; //parche
 	const salt = await bcrypt.genSalt(5);
 	return bcrypt.hash(password, salt);
 };

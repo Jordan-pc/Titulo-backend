@@ -1,52 +1,66 @@
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 import Post, { IPost } from './post.model';
 import User from '../user/user.model';
 import Comments from '../comments/comment.model';
 
 export default class PostController {
 	async savePost(req: Request, res: Response) {
-		try {
-			let user = await User.findById(req.userId);
-			if (!user) return res.status(204).send('Usuario no encontrado.');
-			const { title, url, content, categorys, tags } = req.body;
-			const post: IPost = new Post({
-				title,
-				url,
-				content,
-				categorys,
-				tags,
-				publishedBy: req.userId
-			});
-			user.posts.push(post._id);
-			await post.save();
-			await user.save();
-			res.status(200).send(post);
-		} catch (error) {
-			console.log(error);
-			return res.status(400).send(error);
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).send(errors);
 		}
+		let user = await User.findById(req.userId);
+		if (!user) {
+			return res.status(204).send({ message: 'Usuario no encontrado.' });
+		}
+		const { title, url, content, categorys, tags } = req.body;
+		const post = await Post.findOne({
+			$and: [{ enabled: true }, { $or: [{ url }, { title }] }]
+		});
+		if (post) {
+			return res.status(200).send({
+				message: 'Ya existe una publicación con ese titulo o url'
+			});
+		}
+		const newPost: IPost = new Post({
+			title,
+			url,
+			content,
+			categorys,
+			tags,
+			publishedBy: req.userId
+		});
+		user.posts.push(newPost._id);
+		await newPost.save();
+		await user.save();
+		return res.status(200).send(newPost);
 	}
 	async getPosts(req: Request, res: Response) {
-		try {
-			const posts = await Post.find({ enabled: true })
-				.populate({
-					path: 'publishedBy',
-					model: User,
-					select: 'name'
-				})
-				.populate({
-					path: 'comments',
-					model: Comments,
-					match: { enabled: true },
-					select: 'content'
-				});
-			res.status(200).send(posts);
-		} catch (error) {
-			console.log(error);
-			return res.status(400).send(error);
+		const posts = await Post.find({ enabled: true })
+			.populate({
+				path: 'publishedBy',
+				model: User,
+				select: 'name'
+			})
+			.populate({
+				path: 'comments',
+				model: Comments,
+				match: { enabled: true },
+				select: 'content'
+			});
+		if (!posts) {
+			return res
+				.status(400)
+				.send({ message: 'No se encontraron publicaciones' });
 		}
+		return res.status(200).send(posts);
 	}
 	async getPost(req: Request, res: Response) {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).send(errors);
+		}
 		try {
 			const post = await Post.findById(req.params.id)
 				.populate({
@@ -60,21 +74,37 @@ export default class PostController {
 					match: { enabled: true },
 					select: 'content'
 				});
-			if (!post)
-				return res.status(204).send('Publicación no encontrada.');
-			res.status(200).send(post);
+			if (!post) {
+				return res
+					.status(204)
+					.send({ message: 'Publicación no encontrada.' });
+			}
+			return res.status(200).send(post);
 		} catch (error) {
-			console.log(error);
-			return res.status(400).send(error);
+			return res.status(500).send({ message: 'Ha ocurrido un error' });
 		}
 	}
 	async modifyPost(req: Request, res: Response) {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).send(errors);
+		}
 		try {
 			const { title, url, content, categorys, tags } = req.body;
-			let post = await Post.findById(req.params.id);
-			if (!post)
-				return res.status(204).send('Publicación no encontrada.');
-			if (req.userId == post.publishedBy || req.userRole === 'ADMIN') {
+			let posturl = await Post.findById(req.params.id);
+			let post = await Post.findOne({ $or: [{ url }, { title }] });
+			if (!posturl) {
+				return res
+					.status(204)
+					.send({ message: 'Publicación no encontrada.' });
+			} else if (post) {
+				return res.status(200).send({
+					message: 'Ya existe una publicación con ese titulo o url'
+				});
+			} else if (
+				req.userId == post.publishedBy ||
+				req.userRole === 'ADMIN'
+			) {
 				post.title = title;
 				post.url = url;
 				post.content = content;
@@ -82,31 +112,41 @@ export default class PostController {
 				post.tags = tags;
 				post.updatedAt = Date.now();
 				await post.save();
-				res.status(200).send('Cambios realizados.');
+				return res.status(200).send({ message: 'Cambios realizados.' });
 			} else {
-				return res
-					.status(204)
-					.send('No posees permiso para modificar esta publicación.');
+				return res.status(204).send({
+					message:
+						'No posees permiso para modificar esta publicación.'
+				});
 			}
 		} catch (error) {
-			console.log(error);
-			return res.status(400).send(error);
+			return res
+				.status(500)
+				.send({ message: 'Se ha producido un error' });
 		}
 	}
 	async changePostEnabled(req: Request, res: Response) {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).send(errors);
+		}
 		try {
 			let post = await Post.findById(req.params.id);
 			if (!post)
-				return res.status(204).send('Publicación no encontrada.');
+				return res
+					.status(204)
+					.send({ message: 'Publicación no encontrada.' });
 			if (req.userId == post.publishedBy || req.userRole === 'ADMIN') {
 				post.enabled = !post.enabled;
 				await post.save();
 				//post.deleteOne(); en caso de querer borrar de verdad
-				res.status(200).send('Publicación eliminada.');
+				return res.status(200).send({
+					message: 'Se cambio la visualización de la publicacion'
+				});
 			} else {
-				res.status(204).send(
-					'No posees permiso para eliminar esta publicación'
-				);
+				return res.status(200).send({
+					message: 'No posees permiso para eliminar esta publicación'
+				});
 			}
 		} catch (error) {
 			console.log(error);
@@ -114,22 +154,18 @@ export default class PostController {
 		}
 	}
 	async filter(req: Request, res: Response) {
-		try {
-			const { title, categorys, tags } = req.body;
-			let posts = await Post.find({
-				enabled: true,
-				...(title.length > 0
-					? { title: { $regex: title, $options: 'i' } }
-					: {}),
-				...(categorys.length > 0
-					? { categorys: { $all: categorys } }
-					: {}),
-				...(tags.length > 0 ? { tags: { $all: tags } } : {})
-			});
-			res.status(200).send(posts);
-		} catch (error) {
-			console.log(error);
-			return res.status(400).send(error);
+		const { title, categorys, tags } = req.body;
+		let posts = await Post.find({
+			enabled: true,
+			...(title ? { title: { $regex: title, $options: 'i' } } : {}),
+			...(categorys ? { categorys: { $all: categorys } } : {}),
+			...(tags ? { tags: { $all: tags } } : {})
+		});
+		if (!posts) {
+			return res
+				.status(400)
+				.send({ message: 'No se encontraron publicaciones' });
 		}
+		return res.status(200).send(posts);
 	}
 }
