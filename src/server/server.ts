@@ -2,6 +2,7 @@ import express from 'express';
 import userRouter from '../user/user.routes';
 import authRouter from '../auth/auth.routes';
 import postRouter from '../post/post.routes';
+import reportRouter from '../reports/report.routes';
 import commentRouter from '../comments/comment.routes';
 
 export default class Server {
@@ -35,5 +36,6 @@ export default class Server {
 		this.app.use(authRouter);
 		this.app.use(postRouter);
 		this.app.use(commentRouter);
+		this.app.use(reportRouter);
 	}
 }
