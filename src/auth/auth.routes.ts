@@ -6,12 +6,12 @@ const authController = new AuthController();
 const authRouter: Router = Router();
 
 authRouter.post(
-	'/auth/login',
-	[
-		check('email').exists().isEmail().withMessage('El correo es necesario'),
-		check('password').exists().withMessage('La contraseña es necesaria')
-	],
-	authController.logIn
+  '/auth/login',
+  [
+    check('email').exists().isEmail().withMessage('El correo no es valido'),
+    check('password').exists().withMessage('La contraseña es necesaria')
+  ],
+  authController.logIn
 );
 
 export default authRouter;

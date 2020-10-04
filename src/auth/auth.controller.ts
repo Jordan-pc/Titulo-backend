@@ -27,6 +27,13 @@ export default class AuthController {
         expiresIn: '24H'
       }
     );
-    return res.status(200).send({ accessToken: token });
+    return res
+      .status(200)
+      .send({
+        accessToken: token,
+        name: user.name,
+        id: user._id,
+        role: user.role
+      });
   }
 }
