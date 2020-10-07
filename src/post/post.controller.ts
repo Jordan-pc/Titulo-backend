@@ -12,14 +12,14 @@ export default class PostController {
     }
     let user = await User.findById(req.userId);
     if (!user) {
-      return res.status(204).send({ message: 'Usuario no encontrado.' });
+      return res.status(404).send({ message: 'Usuario no encontrado.' });
     }
     const { title, url, content, categorys, tags } = req.body;
     const post = await Post.findOne({
       $and: [{ enabled: true }, { $or: [{ url }, { title }] }]
     });
     if (post) {
-      return res.status(200).send({
+      return res.status(409).send({
         message: 'Ya existe una publicación con ese titulo o url'
       });
     }
@@ -66,7 +66,7 @@ export default class PostController {
           select: 'content'
         });
       if (!post) {
-        return res.status(204).send({ message: 'Publicación no encontrada.' });
+        return res.status(404).send({ message: 'Publicación no encontrada.' });
       }
       return res.status(200).send(post);
     } catch (error) {
@@ -83,7 +83,7 @@ export default class PostController {
       let posturl = await Post.findById(req.params.id);
       let post = await Post.findOne({ $or: [{ url }, { title }] });
       if (!posturl) {
-        return res.status(204).send({ message: 'Publicación no encontrada.' });
+        return res.status(404).send({ message: 'Publicación no encontrada.' });
       } else if (post) {
         return res.status(200).send({
           message: 'Ya existe una publicación con ese titulo o url'
@@ -98,7 +98,7 @@ export default class PostController {
         await post.save();
         return res.status(200).send({ message: 'Cambios realizados.' });
       } else {
-        return res.status(204).send({
+        return res.status(401).send({
           message: 'No posees permiso para modificar esta publicación.'
         });
       }
@@ -114,7 +114,7 @@ export default class PostController {
     try {
       let post = await Post.findById(req.params.id);
       if (!post)
-        return res.status(204).send({ message: 'Publicación no encontrada.' });
+        return res.status(404).send({ message: 'Publicación no encontrada.' });
       if (req.userId == post.publishedBy || req.userRole === 'ADMIN') {
         post.enabled = !post.enabled;
         await post.save();
@@ -123,7 +123,7 @@ export default class PostController {
           message: 'Se cambio la visualización de la publicacion'
         });
       } else {
-        return res.status(200).send({
+        return res.status(401).send({
           message: 'No posees permiso para eliminar esta publicación'
         });
       }
