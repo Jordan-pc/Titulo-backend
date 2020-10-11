@@ -81,21 +81,28 @@ export default class PostController {
     try {
       const { title, url, content, categorys, tags } = req.body;
       let posturl = await Post.findById(req.params.id);
-      let post = await Post.findOne({ $or: [{ url }, { title }] });
+      let posts = await Post.find({ $or: [{ url }, { title }] });
       if (!posturl) {
         return res.status(404).send({ message: 'Publicación no encontrada.' });
-      } else if (post) {
-        return res.status(200).send({
-          message: 'Ya existe una publicación con ese titulo o url'
-        });
-      } else if (req.userId == post.publishedBy || req.userRole === 'ADMIN') {
-        post.title = title;
-        post.url = url;
-        post.content = content;
-        post.categorys = categorys;
-        post.tags = tags;
-        post.updatedAt = Date.now();
-        await post.save();
+      }
+      for (const post of posts) {
+        if (
+          (post.url === url && post.publishedBy != req.userId) ||
+          (post.title === title && post.publishedBy != req.userId)
+        ) {
+          return res.status(400).send({
+            message: 'Ya existe una publicación con ese titulo o url'
+          });
+        }
+      }
+      if (req.userId == posturl.publishedBy || req.userRole === 'ADMIN') {
+        posturl.title = title;
+        posturl.url = url;
+        posturl.content = content;
+        posturl.categorys = categorys;
+        posturl.tags = tags;
+        posturl.updatedAt = Date.now();
+        await posturl.save();
         return res.status(200).send({ message: 'Cambios realizados.' });
       } else {
         return res.status(401).send({
