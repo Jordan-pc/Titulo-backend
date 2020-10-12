@@ -12,6 +12,11 @@ postRouter.get(
   [param(['id', 'se necesita la url de la publicacion'])],
   postController.getPost
 );
+postRouter.get(
+  '/myposts',
+  AuthMiddleware.tokenValidation,
+  postController.myposts
+);
 postRouter.post(
   '/publications/filter',
   [
@@ -52,7 +57,7 @@ postRouter.put(
   AuthMiddleware.tokenValidation,
   postController.modifyPost
 );
-postRouter.patch(
+postRouter.delete(
   '/publications/:id',
   [param(['id', 'se necesita la url de la publicacion'])],
   AuthMiddleware.tokenValidation,

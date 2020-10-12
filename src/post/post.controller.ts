@@ -73,6 +73,16 @@ export default class PostController {
       return res.status(500).send({ message: 'Ha ocurrido un error' });
     }
   }
+  async myposts(req: Request, res: Response) {
+    try {
+      const posts = await Post.find({ enabled: true, publishedBy: req.userId })
+        .select({ title: 1 })
+        .sort({ createdAt: -1 });
+      return res.status(200).send(posts);
+    } catch (error) {
+      return res.status(500).json({ message: 'Ha ocurrido un error' });
+    }
+  }
   async modifyPost(req: Request, res: Response) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -90,9 +100,11 @@ export default class PostController {
           (post.url === url && post.publishedBy != req.userId) ||
           (post.title === title && post.publishedBy != req.userId)
         ) {
-          return res.status(400).send({
-            message: 'Ya existe una publicación con ese titulo o url'
-          });
+          if (req.userRole !== 'ADMIN') {
+            return res.status(400).send({
+              message: 'Ya existe una publicación con ese titulo o url'
+            });
+          }
         }
       }
       if (req.userId == posturl.publishedBy || req.userRole === 'ADMIN') {
@@ -123,7 +135,7 @@ export default class PostController {
       if (!post)
         return res.status(404).send({ message: 'Publicación no encontrada.' });
       if (req.userId == post.publishedBy || req.userRole === 'ADMIN') {
-        post.enabled = !post.enabled;
+        post.enabled = false;
         await post.save();
         //post.deleteOne(); en caso de querer borrar de verdad
         return res.status(200).send({
