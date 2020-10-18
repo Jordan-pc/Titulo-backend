@@ -7,34 +7,34 @@ const commentController = new CommentController();
 const commentRouter: Router = Router();
 
 commentRouter.post(
-	'/publications/:id/comment',
-	[
-		param(['id', 'se necesita la url de la publicacion']),
-		check('content')
-			.exists()
-			.withMessage('Se requiere el contenido del comentario')
-			.isString()
-	],
-	AuthMiddleware.tokenValidation,
-	commentController.saveComment
+  '/publications/:id/comment',
+  [
+    param(['id', 'se necesita la url de la publicacion']),
+    check('content')
+      .exists()
+      .withMessage('Se requiere el contenido del comentario')
+      .isString()
+  ],
+  AuthMiddleware.tokenValidation,
+  commentController.saveComment
 );
 commentRouter.put(
-	'/publications/comment/change/:id',
-	[
-		param(['id', 'se necesita la url del comentario']),
-		check('content')
-			.exists()
-			.withMessage('Se requiere el contenido del comentario')
-			.isString()
-	],
-	AuthMiddleware.tokenValidation,
-	commentController.modifyComment
+  '/publications/comment/change/:id',
+  [
+    param(['id', 'se necesita la url del comentario']),
+    check('content')
+      .exists()
+      .withMessage('Se requiere el contenido del comentario')
+      .isString()
+  ],
+  AuthMiddleware.tokenValidation,
+  commentController.modifyComment
 );
-commentRouter.patch(
-	'/commentdelete/:id',
-	[param(['id', 'se necesita la url del comentario'])	],
-	AuthMiddleware.tokenValidation,
-	commentController.changeCommentEnabled
+commentRouter.delete(
+  '/commentdelete/:id',
+  [param(['id', 'se necesita la url del comentario'])],
+  AuthMiddleware.tokenValidation,
+  commentController.changeCommentEnabled
 );
 
 export default commentRouter;

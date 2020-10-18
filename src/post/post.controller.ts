@@ -63,7 +63,7 @@ export default class PostController {
           path: 'comments',
           model: Comments,
           match: { enabled: true },
-          select: 'content'
+          select: { content: 1, commentedBy: 1 }
         });
       if (!post) {
         return res.status(404).send({ message: 'Publicación no encontrada.' });
