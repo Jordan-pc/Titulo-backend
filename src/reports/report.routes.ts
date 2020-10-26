@@ -23,7 +23,7 @@ reportRouter.post(
 	reportController.reportPublication
 );
 
-reportRouter.patch(
+reportRouter.put(
 	'/report/:id',
 	[param(['id', 'se necesita la url del reporte'])],
 	AuthMiddleware.tokenValidation,
