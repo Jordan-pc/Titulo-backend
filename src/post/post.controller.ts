@@ -76,7 +76,7 @@ export default class PostController {
   async myposts(req: Request, res: Response) {
     try {
       const posts = await Post.find({ enabled: true, publishedBy: req.userId })
-        .select({ title: 1 })
+        .select({ title: 1, content: 1 })
         .sort({ createdAt: -1 });
       return res.status(200).send(posts);
     } catch (error) {
