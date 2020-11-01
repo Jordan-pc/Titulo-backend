@@ -37,9 +37,16 @@ export default class PostController {
     return res.status(200).send(newPost);
   }
   async getPosts(req: Request, res: Response) {
+    let { page = 1 } = req.query;
+    page = Number(page);
+    if (isNaN(page)) {
+      return res.status(400).send({ message: 'page invalid' });
+    }
     const posts = await Post.find({ enabled: true })
       .select({ title: 1, content: 1, categorys: 1 })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .skip((page - 1) * 5);
     if (!posts) {
       return res
         .status(400)
