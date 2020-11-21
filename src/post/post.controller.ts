@@ -170,7 +170,7 @@ export default class PostController {
       ...(categorys ? { categorys: { $all: categorys } } : {}),
       ...(tags ? { tags: { $all: tags } } : {})
     })
-      .select({ title: 1, content: 1, categorys: 1 })
+      .select({ title: 1, content: 1, categorys: 1, createdAt: 1 })
       .sort({ createdAt: -1 });
     if (!posts) {
       return res
