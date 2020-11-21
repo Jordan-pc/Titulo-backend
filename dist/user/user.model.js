@@ -71,7 +71,7 @@ let userSchema = new mongoose_1.Schema({
     },
     enabled: {
         type: Boolean,
-        default: true
+        default: false
     },
     createdAt: {
         type: Date,

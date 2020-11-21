@@ -13,8 +13,7 @@ export default class AuthController {
     let user: IUser | null = await User.findOne({
       $and: [{ email }, { enabled: true }]
     });
-    if (!user)
-      return res.status(400).send({ message: 'Email o contraseña incorrecta' });
+    if (!user) return res.status(400).send({ message: 'Email no registrado' });
     if (!(await user.validatePassword(password)))
       return res.status(400).send({ message: 'Email o contraseña incorrecta' });
     const token: string = jwt.sign(
@@ -27,13 +26,11 @@ export default class AuthController {
         expiresIn: '24H'
       }
     );
-    return res
-      .status(200)
-      .send({
-        accessToken: token,
-        name: user.name,
-        id: user._id,
-        role: user.role
-      });
+    return res.status(200).send({
+      accessToken: token,
+      name: user.name,
+      id: user._id,
+      role: user.role
+    });
   }
 }

@@ -29,6 +29,10 @@ class ReportController {
             }
             try {
                 let posturl = yield post_model_1.default.findById(req.params.id);
+                if (!posturl)
+                    return res
+                        .status(400)
+                        .send({ message: 'Ingrese una publicacion valida' });
             }
             catch (error) {
                 return res
@@ -53,9 +57,7 @@ class ReportController {
             }
             const reports = yield report_model_1.default.find({ resolved: false });
             if (!reports) {
-                return res
-                    .status(400)
-                    .send({ message: 'No se encontraron reportes' });
+                return res.status(400).send({ message: 'No se encontraron reportes' });
             }
             return res.status(200).send(reports);
         });
@@ -72,18 +74,14 @@ class ReportController {
             try {
                 const report = yield report_model_1.default.findById(req.params.id);
                 if (!report) {
-                    return res
-                        .status(400)
-                        .send({ message: 'Ingrese un reporte valido' });
+                    return res.status(400).send({ message: 'Ingrese un reporte valido' });
                 }
                 report.resolved = true;
                 yield report.save();
                 return res.status(200).send({ message: 'Reporte resuelto' });
             }
             catch (error) {
-                return res
-                    .status(400)
-                    .send({ message: 'Ingrese un reporte valido' });
+                return res.status(400).send({ message: 'Ingrese un reporte valido' });
             }
         });
     }

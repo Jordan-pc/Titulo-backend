@@ -27,7 +27,7 @@ class AuthController {
                 $and: [{ email }, { enabled: true }]
             });
             if (!user)
-                return res.status(400).send({ message: 'Email o contraseña incorrecta' });
+                return res.status(400).send({ message: 'Email no registrado' });
             if (!(yield user.validatePassword(password)))
                 return res.status(400).send({ message: 'Email o contraseña incorrecta' });
             const token = jsonwebtoken_1.default.sign({
@@ -36,9 +36,7 @@ class AuthController {
             }, 'token-dev', {
                 expiresIn: '24H'
             });
-            return res
-                .status(200)
-                .send({
+            return res.status(200).send({
                 accessToken: token,
                 name: user.name,
                 id: user._id,
