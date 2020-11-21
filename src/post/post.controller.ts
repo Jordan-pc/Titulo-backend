@@ -43,7 +43,7 @@ export default class PostController {
       return res.status(400).send({ message: 'page invalid' });
     }
     const posts = await Post.find({ enabled: true })
-      .select({ title: 1, content: 1, categorys: 1 })
+      .select({ title: 1, content: 1, categorys: 1, createdAt: 1 })
       .sort({ createdAt: -1 })
       .limit(5)
       .skip((page - 1) * 5);
