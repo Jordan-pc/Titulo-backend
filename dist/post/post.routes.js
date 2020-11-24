@@ -12,6 +12,7 @@ const postRouter = express_1.Router();
 postRouter.get('/publications', postController.getPosts);
 postRouter.get('/publications/:id', [express_validator_1.param(['id', 'se necesita la url de la publicacion'])], postController.getPost);
 postRouter.get('/myposts', auth_middleware_1.default.tokenValidation, postController.myposts);
+postRouter.get('/stadistics', auth_middleware_1.default.tokenValidation, postController.stadistic);
 postRouter.post('/publications/filter', [
     express_validator_1.check('title').optional().isString().notEmpty(),
     express_validator_1.check('categorys').optional().isArray().notEmpty(),
@@ -38,5 +39,6 @@ postRouter.put('/publications/:id', [
         .isArray(),
     express_validator_1.check('tags').exists().withMessage('Se necesita al menos un tag').isArray()
 ], auth_middleware_1.default.tokenValidation, postController.modifyPost);
+postRouter.put('/like/:id', [express_validator_1.check('state').exists().withMessage('State necesario').isString()], auth_middleware_1.default.tokenValidation, postController.addLike);
 postRouter.delete('/publications/:id', [express_validator_1.param(['id', 'se necesita la url de la publicacion'])], auth_middleware_1.default.tokenValidation, postController.changePostEnabled);
 exports.default = postRouter;

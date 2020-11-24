@@ -17,6 +17,11 @@ postRouter.get(
   AuthMiddleware.tokenValidation,
   postController.myposts
 );
+postRouter.get(
+  '/stadistics',
+  AuthMiddleware.tokenValidation,
+  postController.stadistic
+);
 postRouter.post(
   '/publications/filter',
   [
@@ -56,6 +61,12 @@ postRouter.put(
   ],
   AuthMiddleware.tokenValidation,
   postController.modifyPost
+);
+postRouter.put(
+  '/like/:id',
+  [check('state').exists().withMessage('State necesario').isString()],
+  AuthMiddleware.tokenValidation,
+  postController.addLike
 );
 postRouter.delete(
   '/publications/:id',

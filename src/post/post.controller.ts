@@ -43,7 +43,7 @@ export default class PostController {
       return res.status(400).send({ message: 'page invalid' });
     }
     const posts = await Post.find({ enabled: true })
-      .select({ title: 1, content: 1, categorys: 1, createdAt: 1 })
+      .select({ title: 1, content: 1, categorys: 1, createdAt: 1, likes: 1 })
       .sort({ createdAt: -1 })
       .limit(5)
       .skip((page - 1) * 5);
@@ -52,7 +52,8 @@ export default class PostController {
         .status(400)
         .send({ message: 'No se encontraron publicaciones' });
     }
-    return res.status(200).send(posts);
+    const total = await Post.find({ enabled: true }).countDocuments();
+    return res.status(200).send({ posts, total });
   }
   async getPost(req: Request, res: Response) {
     const errors = validationResult(req);
@@ -170,13 +171,82 @@ export default class PostController {
       ...(categorys ? { categorys: { $all: categorys } } : {}),
       ...(tags ? { tags: { $all: tags } } : {})
     })
-      .select({ title: 1, content: 1, categorys: 1, createdAt: 1 })
+      .select({ title: 1, content: 1, categorys: 1, createdAt: 1, likes: 1 })
       .sort({ createdAt: -1 });
     if (!posts) {
       return res
         .status(400)
         .send({ message: 'No se encontraron publicaciones' });
     }
-    return res.status(200).send(posts);
+    const total = await Post.find({ enabled: true }).countDocuments();
+    return res.status(200).send({ posts, total });
+  }
+  async addLike(req: Request, res: Response) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send(errors);
+    }
+    try {
+      const { state } = req.body;
+      let post = await Post.findById(req.params.id);
+      if (state == 'like') {
+        const index = post.likes.indexOf(req.userId);
+        if (index != -1) {
+          return res
+            .status(400)
+            .send({ message: 'Like registrado con anterioridad' });
+        }
+        post.likes.push(req.userId);
+      } else {
+        const index = post.likes.indexOf(req.userId);
+        if (index == -1) {
+          return res.status(404).send({ message: 'No se encontró like' });
+        }
+        post.likes.splice(index, 1);
+      }
+      await post.save();
+      return res.status(200).send({ message: 'Registrado correctamente' });
+    } catch (error) {
+      return res.status(400).send({ message: 'Ha ocurrido un error' });
+    }
+  }
+  async stadistic(req: Request, res: Response) {
+    const mostLiked = await Post.aggregate([
+      { $match: { enabled: true } },
+      {
+        $project: {
+          title: 1,
+          createdAt: 1,
+          numberLikes: { $size: { $ifNull: ['$likes', []] } }
+        }
+      },
+      { $sort: { numberLikes: -1, createdAt: -1 } },
+      { $limit: 5 }
+    ]);
+    const mostCommented = await Post.aggregate([
+      { $match: { enabled: true } },
+      {
+        $project: {
+          title: 1,
+          createdAt: 1,
+          numberComments: { $size: { $ifNull: ['$comments', []] } }
+        }
+      },
+      { $sort: { numberComments: -1, createdAt: -1 } },
+      { $limit: 5 }
+    ]);
+    const mostPublisher = await User.aggregate([
+      { $match: { enabled: true } },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          numberPosts: { $size: { $ifNull: ['$posts', []] } }
+        }
+      },
+      { $sort: { numberPosts: -1 } },
+      { $limit: 5 }
+    ]);
+    return res.status(200).send({ mostLiked, mostCommented, mostPublisher });
   }
 }

@@ -58,7 +58,7 @@ class PostController {
                 return res.status(400).send({ message: 'page invalid' });
             }
             const posts = yield post_model_1.default.find({ enabled: true })
-                .select({ title: 1, content: 1, categorys: 1, createdAt: 1 })
+                .select({ title: 1, content: 1, categorys: 1, createdAt: 1, likes: 1 })
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .skip((page - 1) * 5);
@@ -67,7 +67,8 @@ class PostController {
                     .status(400)
                     .send({ message: 'No se encontraron publicaciones' });
             }
-            return res.status(200).send(posts);
+            const total = yield post_model_1.default.find({ enabled: true }).countDocuments();
+            return res.status(200).send({ posts, total });
         });
     }
     getPost(req, res) {
@@ -194,14 +195,89 @@ class PostController {
             }
             const { title, categorys, tags } = req.body;
             let posts = yield post_model_1.default.find(Object.assign(Object.assign(Object.assign({ enabled: true }, (title ? { title: { $regex: title, $options: 'i' } } : {})), (categorys ? { categorys: { $all: categorys } } : {})), (tags ? { tags: { $all: tags } } : {})))
-                .select({ title: 1, content: 1, categorys: 1, createdAt: 1 })
+                .select({ title: 1, content: 1, categorys: 1, createdAt: 1, likes: 1 })
                 .sort({ createdAt: -1 });
             if (!posts) {
                 return res
                     .status(400)
                     .send({ message: 'No se encontraron publicaciones' });
             }
-            return res.status(200).send(posts);
+            const total = yield post_model_1.default.find({ enabled: true }).countDocuments();
+            return res.status(200).send({ posts, total });
+        });
+    }
+    addLike(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const errors = express_validator_1.validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).send(errors);
+            }
+            try {
+                const { state } = req.body;
+                let post = yield post_model_1.default.findById(req.params.id);
+                if (state == 'like') {
+                    const index = post.likes.indexOf(req.userId);
+                    if (index != -1) {
+                        return res
+                            .status(400)
+                            .send({ message: 'Like registrado con anterioridad' });
+                    }
+                    post.likes.push(req.userId);
+                }
+                else {
+                    const index = post.likes.indexOf(req.userId);
+                    if (index == -1) {
+                        return res.status(404).send({ message: 'No se encontró like' });
+                    }
+                    post.likes.splice(index, 1);
+                }
+                yield post.save();
+                return res.status(200).send({ message: 'Registrado correctamente' });
+            }
+            catch (error) {
+                return res.status(400).send({ message: 'Ha ocurrido un error' });
+            }
+        });
+    }
+    stadistic(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const mostLiked = yield post_model_1.default.aggregate([
+                { $match: { enabled: true } },
+                {
+                    $project: {
+                        title: 1,
+                        createdAt: 1,
+                        numberLikes: { $size: { $ifNull: ['$likes', []] } }
+                    }
+                },
+                { $sort: { numberLikes: -1, createdAt: -1 } },
+                { $limit: 5 }
+            ]);
+            const mostCommented = yield post_model_1.default.aggregate([
+                { $match: { enabled: true } },
+                {
+                    $project: {
+                        title: 1,
+                        createdAt: 1,
+                        numberComments: { $size: { $ifNull: ['$comments', []] } }
+                    }
+                },
+                { $sort: { numberComments: -1, createdAt: -1 } },
+                { $limit: 5 }
+            ]);
+            const mostPublisher = yield user_model_1.default.aggregate([
+                { $match: { enabled: true } },
+                {
+                    $project: {
+                        name: 1,
+                        email: 1,
+                        numberPosts: { $size: { $ifNull: ['$posts', []] } }
+                    }
+                },
+                { $sort: { numberPosts: -1 } },
+                { $limit: 5 }
+            ]);
+            return res.status(200).send({ mostLiked, mostCommented, mostPublisher });
         });
     }
 }

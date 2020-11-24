@@ -46,6 +46,7 @@ let PostSchema = new mongoose_1.Schema({
         type: Boolean,
         default: true
     },
+    likes: [{ type: String }],
     categorys: [
         {
             type: String
