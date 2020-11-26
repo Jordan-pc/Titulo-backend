@@ -12,7 +12,7 @@ const postRouter = express_1.Router();
 postRouter.get('/publications', postController.getPosts);
 postRouter.get('/publications/:id', [express_validator_1.param(['id', 'se necesita la url de la publicacion'])], postController.getPost);
 postRouter.get('/myposts', auth_middleware_1.default.tokenValidation, postController.myposts);
-postRouter.get('/stadistics', auth_middleware_1.default.tokenValidation, postController.stadistic);
+postRouter.get('/stadistics', postController.stadistic);
 postRouter.post('/publications/filter', [
     express_validator_1.check('title').optional().isString().notEmpty(),
     express_validator_1.check('categorys').optional().isArray().notEmpty(),

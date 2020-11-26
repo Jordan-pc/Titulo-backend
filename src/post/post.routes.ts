@@ -17,11 +17,7 @@ postRouter.get(
   AuthMiddleware.tokenValidation,
   postController.myposts
 );
-postRouter.get(
-  '/stadistics',
-  AuthMiddleware.tokenValidation,
-  postController.stadistic
-);
+postRouter.get('/stadistics', postController.stadistic);
 postRouter.post(
   '/publications/filter',
   [
