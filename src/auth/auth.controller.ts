@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import User, { IUser } from '../user/user.model';
 import jwt from 'jsonwebtoken';
 import * as crypto from 'asymmetric-crypto';
@@ -23,10 +22,6 @@ const decriptLoginData = (encrypted, publicKey) => {
 
 export default class AuthController {
   async logIn(req: Request, res: Response) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).send(errors);
-    }
     const { encrypted, publicKey } = req.body;
 
     const data = decriptLoginData(encrypted, publicKey);

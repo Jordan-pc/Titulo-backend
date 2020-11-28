@@ -31,7 +31,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_validator_1 = require("express-validator");
 const user_model_1 = __importDefault(require("../user/user.model"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto = __importStar(require("asymmetric-crypto"));
@@ -48,10 +47,6 @@ const decriptLoginData = (encrypted, publicKey) => {
 class AuthController {
     logIn(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = express_validator_1.validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).send(errors);
-            }
             const { encrypted, publicKey } = req.body;
             const data = decriptLoginData(encrypted, publicKey);
             if (data === 'error') {
