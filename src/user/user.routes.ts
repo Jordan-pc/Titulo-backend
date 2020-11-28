@@ -25,24 +25,7 @@ userRouter.post(
   userController.saveUser
 );
 userRouter.put('/user/validate/:id', userController.validateEmail);
-userRouter.put(
-  '/user/password/:id',
-  [
-    check('password')
-      .exists()
-      .withMessage('La contraseña es necesaria')
-      .isLength({ min: 5 })
-      .withMessage('El largo minimo de la contraseña es de 5 caracteres')
-      .isString(),
-    check(
-      'passwordConfirmation',
-      'passwordConfirmation debe tener el mismo valor de password'
-    )
-      .exists()
-      .custom((value, { req }) => value === req.body.password)
-  ],
-  userController.resetPassword
-);
+userRouter.put('/user/password/:id', userController.resetPassword);
 userRouter.put(
   '/user/forgot',
   [

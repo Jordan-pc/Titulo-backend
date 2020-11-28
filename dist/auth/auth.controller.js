@@ -31,13 +31,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.decriptLoginData = exports.myKeyPair = void 0;
 const user_model_1 = __importDefault(require("../user/user.model"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto = __importStar(require("asymmetric-crypto"));
-const myKeyPair = crypto.keyPair();
-const decriptLoginData = (encrypted, publicKey) => {
+exports.myKeyPair = crypto.keyPair();
+exports.decriptLoginData = (encrypted, publicKey) => {
     try {
-        const decrypted = crypto.decrypt(encrypted.data, encrypted.nonce, publicKey, myKeyPair.secretKey);
+        const decrypted = crypto.decrypt(encrypted.data, encrypted.nonce, publicKey, exports.myKeyPair.secretKey);
         return JSON.parse(decrypted);
     }
     catch (error) {
@@ -48,7 +49,7 @@ class AuthController {
     logIn(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { encrypted, publicKey } = req.body;
-            const data = decriptLoginData(encrypted, publicKey);
+            const data = exports.decriptLoginData(encrypted, publicKey);
             if (data === 'error') {
                 return res.status(400).send({ message: 'Credenciales invalidas' });
             }
@@ -76,7 +77,7 @@ class AuthController {
     }
     key(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            return res.status(200).send({ key: myKeyPair.publicKey });
+            return res.status(200).send({ key: exports.myKeyPair.publicKey });
         });
     }
 }

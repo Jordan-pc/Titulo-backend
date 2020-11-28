@@ -4,6 +4,7 @@ import User, { IUser } from './user.model';
 import Post from '../post/post.model';
 import { sendMail } from '../services/mail.service';
 import jwt from 'jsonwebtoken';
+import { myKeyPair, decriptLoginData } from '../auth/auth.controller';
 
 interface IPayload {
   _id: string;
@@ -94,12 +95,13 @@ export default class UserController {
     }
   }
   async resetPassword(req: Request, res: Response) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).send(errors);
+    const { encrypted, publicKey } = req.body;
+    const data = decriptLoginData(encrypted, publicKey);
+    if (data === 'error') {
+      return res.status(400).send({ message: 'Credenciales invalidas' });
     }
     try {
-      const { password, passwordConfirmation } = req.body;
+      const { password, passwordConfirmation } = data;
       const Payload = jwt.verify(req.params.id, 'token-dev') as IPayload;
       const user = await User.findById(Payload._id);
       if (!user)

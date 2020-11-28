@@ -17,6 +17,7 @@ const user_model_1 = __importDefault(require("./user.model"));
 const post_model_1 = __importDefault(require("../post/post.model"));
 const mail_service_1 = require("../services/mail.service");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const auth_controller_1 = require("../auth/auth.controller");
 class UserController {
     saveUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -110,12 +111,13 @@ class UserController {
     }
     resetPassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = express_validator_1.validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).send(errors);
+            const { encrypted, publicKey } = req.body;
+            const data = auth_controller_1.decriptLoginData(encrypted, publicKey);
+            if (data === 'error') {
+                return res.status(400).send({ message: 'Credenciales invalidas' });
             }
             try {
-                const { password, passwordConfirmation } = req.body;
+                const { password, passwordConfirmation } = data;
                 const Payload = jsonwebtoken_1.default.verify(req.params.id, 'token-dev');
                 const user = yield user_model_1.default.findById(Payload._id);
                 if (!user)

@@ -3,9 +3,9 @@ import User, { IUser } from '../user/user.model';
 import jwt from 'jsonwebtoken';
 import * as crypto from 'asymmetric-crypto';
 
-const myKeyPair = crypto.keyPair();
+export const myKeyPair = crypto.keyPair();
 
-const decriptLoginData = (encrypted, publicKey) => {
+export const decriptLoginData = (encrypted, publicKey) => {
   try {
     const decrypted = crypto.decrypt(
       encrypted.data,
