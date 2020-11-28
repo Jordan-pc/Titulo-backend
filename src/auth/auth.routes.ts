@@ -14,4 +14,6 @@ authRouter.post(
   authController.logIn
 );
 
+authRouter.get('/key', authController.key);
+
 export default authRouter;
