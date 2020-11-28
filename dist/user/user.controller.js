@@ -16,6 +16,7 @@ const express_validator_1 = require("express-validator");
 const user_model_1 = __importDefault(require("./user.model"));
 const post_model_1 = __importDefault(require("../post/post.model"));
 const mail_service_1 = require("../services/mail.service");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class UserController {
     saveUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -115,7 +116,8 @@ class UserController {
             }
             try {
                 const { password, passwordConfirmation } = req.body;
-                const user = yield user_model_1.default.findById(req.params.id);
+                const Payload = jsonwebtoken_1.default.verify(req.params.id, 'token-dev');
+                const user = yield user_model_1.default.findById(Payload._id);
                 if (!user)
                     return res.status(404).send({ message: 'Usuario no encontrado' });
                 if (password &&
@@ -128,7 +130,9 @@ class UserController {
                 return res.status(400).send({ message: 'Las contraseñas no coinciden' });
             }
             catch (error) {
-                return res.status(404).send({ message: 'Usuario no encontrado' });
+                return res
+                    .status(404)
+                    .send({ message: 'Token expirado o usuario no encontrado' });
             }
         });
     }
@@ -142,7 +146,10 @@ class UserController {
             const user = yield user_model_1.default.findOne({ email, enabled: true });
             if (!user)
                 return res.status(404).send({ message: 'Usuario no encontrado' });
-            mail_service_1.sendMail(user.email, user.name, user._id, 'forgot');
+            const token = jsonwebtoken_1.default.sign({ _id: user._id }, 'token-dev', {
+                expiresIn: '1H'
+            });
+            mail_service_1.sendMail(user.email, user.name, token, 'forgot');
             return res.status(200).send({
                 message: 'Se ha enviado un un mail para modificar su contraseña'
             });

@@ -3,6 +3,14 @@ import { validationResult } from 'express-validator';
 import User, { IUser } from './user.model';
 import Post from '../post/post.model';
 import { sendMail } from '../services/mail.service';
+import jwt from 'jsonwebtoken';
+
+interface IPayload {
+  _id: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
 
 export default class UserController {
   async saveUser(req: Request, res: Response) {
@@ -92,7 +100,8 @@ export default class UserController {
     }
     try {
       const { password, passwordConfirmation } = req.body;
-      const user = await User.findById(req.params.id);
+      const Payload = jwt.verify(req.params.id, 'token-dev') as IPayload;
+      const user = await User.findById(Payload._id);
       if (!user)
         return res.status(404).send({ message: 'Usuario no encontrado' });
       if (
@@ -106,7 +115,9 @@ export default class UserController {
       }
       return res.status(400).send({ message: 'Las contraseñas no coinciden' });
     } catch (error) {
-      return res.status(404).send({ message: 'Usuario no encontrado' });
+      return res
+        .status(404)
+        .send({ message: 'Token expirado o usuario no encontrado' });
     }
   }
   async forgotPassword(req: Request, res: Response) {
@@ -118,7 +129,10 @@ export default class UserController {
     const user = await User.findOne({ email, enabled: true });
     if (!user)
       return res.status(404).send({ message: 'Usuario no encontrado' });
-    sendMail(user.email, user.name, user._id, 'forgot');
+    const token: string = jwt.sign({ _id: user._id }, 'token-dev', {
+      expiresIn: '1H'
+    });
+    sendMail(user.email, user.name, token, 'forgot');
     return res.status(200).send({
       message: 'Se ha enviado un un mail para modificar su contraseña'
     });
