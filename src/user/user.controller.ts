@@ -4,7 +4,7 @@ import User, { IUser } from './user.model';
 import Post from '../post/post.model';
 import { sendMail } from '../services/mail.service';
 import jwt from 'jsonwebtoken';
-import { myKeyPair, decriptLoginData } from '../auth/auth.controller';
+import { decriptLoginData } from '../auth/auth.controller';
 
 interface IPayload {
   _id: string;
@@ -15,11 +15,12 @@ interface IPayload {
 
 export default class UserController {
   async saveUser(req: Request, res: Response) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).send(errors);
+    const { encrypted, publicKey } = req.body;
+    const data = decriptLoginData(encrypted, publicKey);
+    if (data === 'error') {
+      return res.status(400).send({ message: 'Credenciales invalidas' });
     }
-    const { name, email, password } = req.body;
+    const { name, email, password } = data;
     const user = await User.findOne({ email });
     if (user) {
       return res
@@ -43,15 +44,16 @@ export default class UserController {
     return res.status(200).send(user);
   }
   async modifyUser(req: Request, res: Response) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).send(errors);
-    }
     let user = await User.findById(req.userId);
     if (!user) {
       return res.status(204).send({ message: 'Usuario no encontrado.' });
     }
-    const { name, email, password, passwordConfirmation, old } = req.body;
+    const { encrypted, publicKey } = req.body;
+    const data = decriptLoginData(encrypted, publicKey);
+    if (data === 'error') {
+      return res.status(400).send({ message: 'Credenciales invalidas' });
+    }
+    const { name, email, password, passwordConfirmation, old } = data;
     const validate = await user.validatePassword(old);
     if (validate) {
       user.name = name;

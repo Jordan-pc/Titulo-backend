@@ -21,11 +21,12 @@ const auth_controller_1 = require("../auth/auth.controller");
 class UserController {
     saveUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = express_validator_1.validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).send(errors);
+            const { encrypted, publicKey } = req.body;
+            const data = auth_controller_1.decriptLoginData(encrypted, publicKey);
+            if (data === 'error') {
+                return res.status(400).send({ message: 'Credenciales invalidas' });
             }
-            const { name, email, password } = req.body;
+            const { name, email, password } = data;
             const user = yield user_model_1.default.findOne({ email });
             if (user) {
                 return res
@@ -53,15 +54,16 @@ class UserController {
     }
     modifyUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = express_validator_1.validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).send(errors);
-            }
             let user = yield user_model_1.default.findById(req.userId);
             if (!user) {
                 return res.status(204).send({ message: 'Usuario no encontrado.' });
             }
-            const { name, email, password, passwordConfirmation, old } = req.body;
+            const { encrypted, publicKey } = req.body;
+            const data = auth_controller_1.decriptLoginData(encrypted, publicKey);
+            if (data === 'error') {
+                return res.status(400).send({ message: 'Credenciales invalidas' });
+            }
+            const { name, email, password, passwordConfirmation, old } = data;
             const validate = yield user.validatePassword(old);
             if (validate) {
                 user.name = name;
