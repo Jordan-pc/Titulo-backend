@@ -61,7 +61,7 @@ export const sendMail = (
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-      user: 'recursosutem@gmail.com',
+      user: 'recursoseducativosutem@gmail.com',
       pass: 'Recursos.Utem1'
     }
   });
